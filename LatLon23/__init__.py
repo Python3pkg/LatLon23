@@ -31,12 +31,11 @@ Author: Gen Del Raye
 def compare(a, b):
     return (a > b) - (a < b)
 
-class GeoCoord:
+class GeoCoord(metaclass=abc.ABCMeta):
     '''
     Abstract class representing geographic coordinates (i.e. latitude or longitude)
     Not meant to be used directly - access through Subclasses Latitude() and Longitude()
     '''
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self, degree = 0, minute = 0, second = 0):
         '''
@@ -326,9 +325,9 @@ def string2geocoord(coord_str, coord_class, format_str = 'D'):
         format_str = '% %'.join((format_str[new_format_start:], format_str[0])) # Move hemisphere identifier to the back
         coord_str = ' '.join((coord_str[new_coord_start:], coord_str[0])) # Move hemisphere identifier to the back
     format_elements = format_str.split('%')
-    separators = [sep for sep in format_elements if sep not in format2value.keys()] # E.g. ' ', '_' or ', ' characters
+    separators = [sep for sep in format_elements if sep not in list(format2value.keys())] # E.g. ' ', '_' or ', ' characters
     separators.append('%') # Dummy separator for the final part of the coord_str
-    formatters = [form for form in format_elements if form in format2value.keys()] # E.g. 'D', 'm', or 'S' characters
+    formatters = [form for form in format_elements if form in list(format2value.keys())] # E.g. 'D', 'm', or 'S' characters
     for form, sep in zip(formatters, separators):
         coord_elements = coord_str.split(sep)
         format2value[form](coord_elements[0]) # Set the coordinate variable (e.g. 'self.degree' with the coordinate substring (e.g. '5')
@@ -706,24 +705,24 @@ def demonstration():
     palmyra = LatLon(Latitude(5.8833), Longitude(-162.0833)) # Try instantiating Latitude and Longitude objects in call
     palmyra # Returns 'Latitude 5.8833, Longitude -162.0833'
     palmyra = LatLon(5.8833, -162.0833) # Or even simpler - initialize from two scalars expressing decimal degrees
-    print(str(palmyra)) # Returns '5.8833, -162.0833'
+    print((str(palmyra))) # Returns '5.8833, -162.0833'
     palmyra = LatLon(Latitude(degree = 5, minute = 52, second = 59.88), Longitude(degree = -162, minute = -4.998)) # or more complicated!
-    print(palmyra.to_string('d% %m% %S% %H')) # Print coordinates to degree minute second (returns ('5 52 59.88 N', '162 4 59.88 W'))
+    print((palmyra.to_string('d% %m% %S% %H'))) # Print coordinates to degree minute second (returns ('5 52 59.88 N', '162 4 59.88 W'))
     palmyra = string2latlon('5 52 59.88 N', '162 4 59.88 W', 'd% %m% %S% %H') # Initialize from more complex string
-    print(palmyra.to_string('d%_%M')) # Print coordinates as degree minutes separated by underscore (returns ('5_52.998', '-162_4.998'))
+    print((palmyra.to_string('d%_%M'))) # Print coordinates as degree minutes separated by underscore (returns ('5_52.998', '-162_4.998'))
     palmyra = string2latlon('N 5, 52.998', 'W 162, 4.998', 'H% %d%, %M') # An alternative complex string
-    print(palmyra.to_string('D')) # Print coordinate to decimal degrees (returns ('5.8833', '-162.0833'))
+    print((palmyra.to_string('D'))) # Print coordinate to decimal degrees (returns ('5.8833', '-162.0833'))
     honolulu = LatLon(Latitude(21.3), Longitude(-157.8167))
-    print(palmyra.distance(honolulu, ellipse = 'sphere')) # FAI distance is 1774.77188181 km
+    print((palmyra.distance(honolulu, ellipse = 'sphere'))) # FAI distance is 1774.77188181 km
     distance = palmyra.distance(honolulu) # WGS84 distance is 1766.69130376 km
     print(distance)
     initial_heading = palmyra.heading_initial(honolulu) # Initial heading to Honolulu on WGS84 ellipsoid
     print(initial_heading)
     hnl = palmyra.offset(initial_heading, distance) # Reconstruct lat/lon for Honolulu based on offset from Palmyra
-    print(hnl.to_string('D')) # Coordinates of Honolulu are latitude 21.3, longitude -157.8167
+    print((hnl.to_string('D'))) # Coordinates of Honolulu are latitude 21.3, longitude -157.8167
     vector = (honolulu - palmyra) * 2 # A GeoVector with heading equal to the vector between palmyra and honolulu, but 2x the magnitude
     print(vector) # Print heading and magnitude
-    print(palmyra + (vector/2.0)) # Recreate the coordinates of Honolulu by adding half of vector to palmyra
+    print((palmyra + (vector/2.0))) # Recreate the coordinates of Honolulu by adding half of vector to palmyra
     print('Finished running demonstration!')
 
 if __name__ == '__main__':
